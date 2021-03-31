@@ -210,7 +210,6 @@ if __name__ == "__main__":
     print("\nRequest (decoded):" + decode_message(message))
 
     # answer of question 2
-
     response = send_udp_message(message, "1.1.1.1", 53)
     print("\nResponse:\n" + response)
     print("\nResponse (decoded):" + decode_message(response))
