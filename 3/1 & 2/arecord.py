@@ -146,6 +146,7 @@ def decode_message(message):
 
     return "\n".join(res)
 
+
 def get_type(type):
     types = [
         "ERROR", # type 0 does not exist
@@ -169,6 +170,7 @@ def get_type(type):
 
     return "{:04x}".format(types.index(type)) if isinstance(type, str) else types[type]
 
+
 def parse_parts(message, start, parts):
     part_start = start + 2
     part_len = message[start:part_start]
@@ -185,8 +187,30 @@ def parse_parts(message, start, parts):
         return parse_parts(message, part_end, parts)
 
 
+def send_udp_message(message, address, port):
+    """send_udp_message sends a message to UDP server
+    message should be a hexadecimal encoded string
+    """
+    message = message.replace(" ", "").replace("\n", "")
+    server_address = (address, port)
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.sendto(binascii.unhexlify(message), server_address)
+        data, _ = sock.recvfrom(4096)
+    finally:
+        sock.close()
+    return binascii.hexlify(data).decode("utf-8")
+
+
 if __name__ == "__main__":
     name_address = input("Please Enter your name address: ")
     message = build_message("A", name_address) 
     print("Request:\n" + message)
     print("\nRequest (decoded):" + decode_message(message))
+
+    # answer of question 2
+
+    response = send_udp_message(message, "1.1.1.1", 53)
+    print("\nResponse:\n" + response)
+    print("\nResponse (decoded):" + decode_message(response))
