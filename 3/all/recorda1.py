@@ -21,7 +21,7 @@ def send_udp_message(message, address, port):
         sock.close()
     return binascii.hexlify(data).decode("utf-8")
 
-def build_message(type="A", address=""):
+def build_message(type, address):
     ID = 65535
     QR = 0
     OPCODE = 0
@@ -125,26 +125,12 @@ def decode_message(message):
 
 def get_type(type):
     types = [
-        "ERROR", # type 0 does not exist
-        "A",
-        "NS",
-        "MD",
-        "MF",
-        "CNAME",
-        "SOA",
-        "MB",
-        "MG",
-        "MR",
-        "NULL",
-        "WKS",
-        "PTS",
-        "HINFO",
-        "MINFO",
-        "MX",
-        "TXT"
-    ]
-
-    return "{:04x}".format(types.index(type)) if isinstance(type, str) else types[type]
+        "ERROR", "A", "NS", "MD", "MF", "CNAME", "SOA", "MB", "MG", "MR", "NULL", "WKS", "PTS", "HINFO", "MINFO", "MX", "TXT"]
+    try:
+        return "{:04x}".format(types.index(type)) if isinstance(type, str) else types[type]
+    except ValueError:
+        print("Enter valid type!")
+        sys.exit()
 
 def parse_parts(message, start, parts):
     part_start = start + 2
@@ -162,7 +148,7 @@ def parse_parts(message, start, parts):
         return parse_parts(message, part_end, parts)
 
 if __name__ == "__main__":
-    
+    typ = input("Enter type of request: ")
     # Write csv file
     with open('name_address.csv', mode='w') as csv_file:
         fieldnames = ['name_address']
@@ -187,16 +173,16 @@ if __name__ == "__main__":
                         'ATYPE', 'ACLASS', 'TTL', 'RDLENGTH', 'RDDATA', 'RDDATA decoded'])
 
         for i in name_address_list:
-            message = build_message("A", i) 
-            print("\nRequest (decoded):" + decode_message(message)[0])
+                message = build_message(typ, i) 
+                print("\nRequest (decoded):" + decode_message(message)[0])
 
-            response = send_udp_message(message, "1.1.1.1", 53)
-            print("\nResponse:\n" + response)
-            print("\nResponse (decoded):" + decode_message(response)[0])
-            respo = decode_message(response)[1]
-            print(respo)
-            for j in range(int(len(respo) / 12)):
-                cwrite.writerow([i, respo[j * 12 + 0], respo[j * 12 + 1], respo[j * 12 + 2], respo[j * 12 + 3], respo[j * 12 + 4], 
-                                    respo[j * 12 + 5], respo[j * 12 + 6], respo[j * 12 + 7], respo[j * 12 + 8], respo[j * 12 + 9], 
-                                        respo[j * 12 + 10], respo[j * 12 + 11]])
+                response = send_udp_message(message, "1.1.1.1", 53)
+                print("\nResponse:\n" + response)
+                print("\nResponse (decoded):" + decode_message(response)[0])
+                respo = decode_message(response)[1]
+                print(respo)
+                for j in range(int(len(respo) / 12)):
+                    cwrite.writerow([i, respo[j * 12 + 0], respo[j * 12 + 1], respo[j * 12 + 2], respo[j * 12 + 3], respo[j * 12 + 4], 
+                                        respo[j * 12 + 5], respo[j * 12 + 6], respo[j * 12 + 7], respo[j * 12 + 8], respo[j * 12 + 9], 
+                                            respo[j * 12 + 10], respo[j * 12 + 11]])
 
