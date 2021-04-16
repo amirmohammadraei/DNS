@@ -95,7 +95,6 @@ def decode_message(message):
     respo = []
     NUM_ANSWERS = max([int(ANCOUNT, 16), int(NSCOUNT, 16), int(ARCOUNT, 16)])
     if NUM_ANSWERS > 0:
-        res.append("\n# ANSWER SECTION")
         
         for ANSWER_COUNT in range(NUM_ANSWERS):
             if (ANSWER_SECTION_STARTS < len(message)):
@@ -174,13 +173,12 @@ if __name__ == "__main__":
 
         for i in name_address_list:
                 message = build_message(typ, i) 
-                print("\nRequest (decoded):" + decode_message(message)[0])
+                #print("\nRequest (decoded):" + decode_message(message)[0])
 
                 response = send_udp_message(message, "1.1.1.1", 53)
-                print("\nResponse:\n" + response)
-                print("\nResponse (decoded):" + decode_message(response)[0])
+                #print("\nResponse:\n" + response)
+                #print("\nResponse (decoded):" + decode_message(response)[0])
                 respo = decode_message(response)[1]
-                print(respo)
                 for j in range(int(len(respo) / 12)):
                     cwrite.writerow([i, respo[j * 12 + 0], respo[j * 12 + 1], respo[j * 12 + 2], respo[j * 12 + 3], respo[j * 12 + 4], 
                                         respo[j * 12 + 5], respo[j * 12 + 6], respo[j * 12 + 7], respo[j * 12 + 8], respo[j * 12 + 9], 
