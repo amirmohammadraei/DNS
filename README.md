@@ -1,2 +1,1 @@
-# DNS
-FIrst project of course computer network.
+Implementation of dns server for the firs project of course Computer Networks.
