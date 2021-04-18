@@ -6,7 +6,9 @@ import sys
 from collections import OrderedDict, namedtuple
 import csv
 import pandas as pd
+import json
 
+from pandas.io.stata import PossiblePrecisionLoss
 
 def build_message(type, address):
     ID = 65535
@@ -150,31 +152,51 @@ if __name__ == "__main__":
     while True:
         choose = input("Please enter 1 to enter your name address and 2 for exit: ")
         if choose == "1":
+            jsonArray = []
             name_address = input("Enter name address: ")
+            with open('cache.csv', encoding='utf-8') as csvf: 
+                csvReader = csv.DictReader(csvf) 
+                cind = 0
+                for row in csvReader: 
+                    jsonArray.append(row)
+                    cind += 1
+            find = 0
+            for i in jsonArray:
 
-    
-            # Read csv file
-            name_address_list = []
-            df = pd.read_csv('name_address.csv')
-            for i in df.iterrows():
-                name_address_list.append(i[1]['name_address'])
+                if i['name address'] == name_address:
+                    find = 1
 
-            with open('cache.csv', mode='w') as csv_file:
-                cwrite = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                cwrite.writerow(['name_address', 'ip'])
+                    if int(i['count']) >= 3:
+                        print('Use cache!')
+                        print(f"ip is: {i['ip']}")
 
-                for i in name_address_list:
-                        message = build_message("A", i) 
-
+                    else:
+                        message = build_message("A", name_address) 
                         response = send_udp_message(message, "1.1.1.1", 53)
                         respo = decode_message(response)[1]
                         for j in range(int(len(respo) / 12)):
-                            cwrite.writerow([i, respo[j * 12 + 11]])
+                            ip = respo[j * 12 + 11]
+                        print(f'ip is (in cache): {ip}')
+                        num = int(i['count']) + 1
+                        i['count'] = str(num)
 
+                    df = pd.read_json(json.dumps(jsonArray))
+                    df.to_csv('cache.csv', index=False)
+
+            if find == 0:
+                csvf.close()
+                message = build_message("A", name_address) 
+                response = send_udp_message(message, "1.1.1.1", 53)
+                respo = decode_message(response)[1]
+                for j in range(int(len(respo) / 12)):
+                    ip = respo[j * 12 + 11]
+                print(f'ip with request: {ip}')
+                with open('cache.csv', 'a') as cache_file:
+                    writer1 = csv.writer(cache_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    writer1.writerow([name_address, ip, 1])
 
         elif choose == "2":
             print("Bye!")
             exit()
         else:
             print(f"Enter 1 or 2 not {choose}")
-
